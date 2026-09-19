@@ -1,0 +1,39 @@
+name: Build ProfitShare DZ V2 APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.3'
+          channel: stable
+          cache: true
+
+      - name: Create Android Flutter project
+        run: |
+          rm -rf build_mobile
+          flutter create --project-name profitshare_dz build_mobile
+          cp mobile/pubspec.yaml build_mobile/pubspec.yaml
+          cp mobile/lib/main.dart build_mobile/lib/main.dart
+
+      - name: Get dependencies
+        working-directory: build_mobile
+        run: flutter pub get
+
+      - name: Build APK
+        working-directory: build_mobile
+        run: flutter build apk --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ProfitShare-DZ-V2-APK
+          path: build_mobile/build/app/outputs/flutter-apk/app-release.apk
